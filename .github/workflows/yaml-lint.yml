@@ -5,7 +5,7 @@ on:
 jobs:
   yaml-lint:
     runs-on: ubuntu-latest
-    container: ruby:alpine
+    container: ruby:3.1-alpine
     steps:
       - name: Checkout Code
         uses: actions/checkout@main

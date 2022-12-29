@@ -1,0 +1,58 @@
+---
+on:
+  workflow_call:
+
+jobs:
+  enumerate_iso_validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+      - name: Pull Change list
+        id: changed-files
+        uses: collin-miller/git-changesets@master
+      - name: Verify Changed files
+        id: verify-changed-files
+        run: |
+          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+          if grep ".*\.pkrvars.hcl" changed.txt; then
+            echo "files_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "files_changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Enumerate iso
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          EXCLUDE: 'amazon-2*,rhel*,sles*,solaris*'
+        shell: pwsh
+        run: "'::set-output name=matrix::{0}' -f $(Get-ChildItem -Path ./ -Include *.pkrvars.hcl -Exclude ${{ env.EXCLUDE }} -Recurse | Foreach-Object {Join-Path -Path $_.Directory.Name -ChildPath $_.Name} | ConvertTo-Json -Compress)"
+        id: enumerate_iso_validation
+    outputs:
+      matrix: ${{ steps.enumerate_iso_validation.outputs.matrix }}
+
+  iso-availability:
+    needs: enumerate_iso_validation
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJson(needs.enumerate_iso_validation.outputs.matrix) }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@main
+      - name: Pull Change list
+        id: changed-files
+        uses: collin-miller/git-changesets@master
+      - name: Verify Changed files
+        id: verify-changed-files
+        run: |
+          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+          if grep ".*\.pkrvars.hcl" changed.txt; then
+            echo "files_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "files_changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: iso-availability
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        shell: pwsh
+        run: Invoke-RestMethod -Method Head -Verbose -Uri $(Get-Content os_pkrvars/$('${{ matrix.template }}'.split('-')[0])/${{ matrix.template }} | ConvertFrom-StringData).iso_url.Trim('"')

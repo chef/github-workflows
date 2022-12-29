@@ -1,0 +1,45 @@
+---
+on:
+  workflow_call:
+    secrets:
+      TOKEN_TFC:
+        required: true
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+      - name: Pull Change list
+        id: changed-files
+        uses: collin-miller/git-changesets@master
+      - name: Verify Changed files
+        id: verify-changed-files
+        run: |
+          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+          if grep ".*\.tf\|.*\.tfvars\|.*.tfvars.json" changed.txt; then
+            echo "files_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "files_changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Setup Terraform
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: hashicorp/setup-terraform@main
+        with:
+          cli_config_credentials_token: ${{ secrets.TOKEN_TFC }}
+      - name: Terraform Init
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          cat <<-EOF > ./sensitive.auto.tfvars
+          tfc_token    = "${{ secrets.TOKEN_TFC }}"
+          github_token = "${{ secrets.TOKEN_GITHUB }}"
+          EOF
+          terraform init
+          terraform -version
+      - name: Terraform Apply
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: terraform apply -auto-approve -input=false

@@ -1,0 +1,28 @@
+---
+on:
+  pull_request:
+
+jobs:
+  markdown-lint:
+    uses: ./.github/workflows/markdown-lint.yml
+
+  markdown-link-checker:
+    uses: ./.github/workflows/markdown-link-checker.yml
+
+  yaml-lint:
+    uses: ./.github/workflows/yaml-lint.yml
+
+  check:
+    if: always()
+    needs:
+      - markdown-lint
+      - markdown-link-checker
+      - yaml-lint
+    runs-on: Ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@main
+        with:
+          allowed-failures: markdown-link-checker
+          allowed-skips:
+          jobs: ${{ toJSON(needs) }}

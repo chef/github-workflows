@@ -1,0 +1,67 @@
+---
+on:
+  workflow_call:
+    inputs:
+      CHEF_USER:
+        required: true
+        type: string
+      CHEF_SERVER_URL:
+        required: true
+        type: string
+      POLICY_GROUP:
+        require: true
+        type: string
+    secrets:
+      CHEF_PEM:
+        required: true
+
+jobs:
+  policyfiles-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@main
+      - name: Pull Change list
+        id: changed-files
+        uses: collin-miller/git-changesets@master
+      - name: Verify Changed files
+        id: verify-changed-files
+        run: |
+          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+          if grep ".*\.json" changed.txt; then
+            echo "files_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "files_changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Install Chef
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: actionshub/chef-install@main
+      - name: Upload to Chef Server
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          mkdir ~/.chef
+          cat <<-EOF > /root/.chef/config.rb
+          client_name              '${{ inputs.CHEF_USER }}'
+          client_key               '/root/.chef/${{ inputs.CHEF_USER }}.pem'
+          ssl_verify_mode          :verify_none
+          chef_server_url          '${{ inputs.CHEF_SERVER_URL }}'
+          EOF
+          echo "${{ secrets.CHEF_ADMIN }}" >> /root/.chef/${{ inputs.CHEF_USER }}.pem
+
+          git diff --diff-filter=d --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | { grep "policyfiles/.*.lock.json" || true; } > pfile.txt
+          if [ -s pfile.txt ];
+          then
+            echo "Need to update Policy_files";
+            while read policy;
+            do
+              echo "***** Installing Cookbooks for $policy *****";
+              chef install $policy;
+              echo "***** Uploading Cookbooks to chef-server for $policy *****";
+              chef push ${{ inputs.POLICY_GROUP }} $policy;
+            done < pfile.txt;
+          else
+            echo "No Policy_files to update";
+            exit 0;
+          fi
+        env:
+          CHEF_LICENSE: accept-no-persist

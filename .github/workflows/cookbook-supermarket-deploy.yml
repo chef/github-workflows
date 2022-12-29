@@ -1,0 +1,44 @@
+---
+on:
+  workflow_call:
+    inputs:
+      SUPERMARKET_URL:
+        required: true
+        type: string
+      SUPERMARKET_USER:
+        required: true
+        type: string
+    secrets:
+      SUPERMARKET_KEY:
+        required: true
+
+jobs:
+  supermarket-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@main
+      - name: Pull Change list
+        id: changed-files
+        uses: collin-miller/git-changesets@master
+      - name: Verify Changed files
+        id: verify-changed-files
+        run: |
+          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+          if grep ".*\.rb" changed.txt; then
+            echo "files_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "files_changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Install Chef
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: actionshub/chef-install@main
+      - name: Upload to Supermarket
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          echo "${{ secrets.SUPERMARKET_KEY }}" >> ~/super.pem
+          knife supermarket share $(grep -oP "(?<=name ')[^' ]+" ./metadata.rb) -u $SUPERMARKET_USER -k ~/super.pem -o ../ -m $SUPERMARKET_URL
+        env:
+          CHEF_LICENSE: accept-no-persist
+          SUPERMARKET_URL: ${{ inputs.SUPERMARKET_URL }}
+          SUPERMARKET_USER: ${{ inputs.SUPERMARKET_USER }}

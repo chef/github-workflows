@@ -1,0 +1,80 @@
+---
+on:
+  workflow_call:
+    secrets:
+      TOKEN_TFC:
+        required: true
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+      - name: Pull Change list
+        id: changed-files
+        uses: collin-miller/git-changesets@master
+      - name: Verify Changed files
+        id: verify-changed-files
+        run: |
+          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+          if grep ".*\.tf\|.*\.tfvars\|.*.tfvars.json" changed.txt; then
+            echo "files_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "files_changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Setup Terraform
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: hashicorp/setup-terraform@main
+        with:
+          cli_config_credentials_token: ${{ secrets.TOKEN_TFC }}
+      - name: Terraform Init
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          cat <<-EOF > ./sensitive.auto.tfvars
+          tfc_token    = "${{ secrets.TOKEN_TFC }}"
+          github_token = "${{ secrets.TOKEN_GITHUB }}"
+          EOF
+          terraform init
+          terraform -version
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request' && steps.verify-changed-files.outputs.files_changed == 'true'
+        run: terraform plan -no-color -input=false
+      - name: Parse TF Plan
+        id: parse
+        if: steps.plan.outcome == 'success' && steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          tf_plan='${{ steps.plan.outputs.stdout }}'
+          plan=`(grep 'Plan:' <<< $tf_plan) || ((grep -q "No changes" <<< $tf_plan) && echo "Plan: 0 to add, 0 to change, 0 to destroy" || exit 1)`
+          echo "::set-output name=stdout::$(echo $plan)"
+      - uses: actions/github-script@main
+        if: github.event_name == 'pull_request' && steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          PLAN: "${{ steps.plan.outputs.stdout }}"
+          PARSE: "${{ steps.parse.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.TOKEN_GITHUB }}
+          script: |
+            const output = `#### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            #### \`${process.env.PARSE}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })

@@ -1,0 +1,28 @@
+---
+on:
+  workflow_call:
+
+jobs:
+  shellcheck-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@main
+      - name: Pull Change list
+        id: changed-files
+        uses: collin-miller/git-changesets@master
+      - name: Verify Changed files
+        id: verify-changed-files
+        run: |
+          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+          if grep ".*\.sh" changed.txt; then
+            echo "files_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "files_changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Install ShellCheck
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: apt-get update && apt-get install shellcheck
+      - name: Run ShellCheck Lint
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: find . -type f -iname "*.sh" -exec shellcheck \{\} \+

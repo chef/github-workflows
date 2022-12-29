@@ -1,0 +1,69 @@
+---
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        required: true
+        type: string
+      cpu-arch:
+        required: true
+        type: string
+      pkrvars-file:
+        required: true
+        type: string
+      hcl-template-folder:
+        required: true
+        type: string
+      matrix-os:
+        required: true
+        type: string
+      matrix-provider:
+        required: true
+        type: string
+
+jobs:
+  packer-builds:
+    runs-on: ${{ inputs.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ inputs.matrix-os }}
+        provider: ${{ inputs.matrix-provider }}
+
+    steps:
+      - name: Install qemu
+        run: brew install qemu
+      - name: Checkout
+        uses: actions/checkout@main
+      - name: Pull Change list
+        id: changed-files
+        uses: collin-miller/git-changesets@master
+      - name: Verify Changed files
+        id: verify-changed-files
+        run: |
+          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+          if grep ".*\.pkrvars.hcl" changed.txt; then
+            echo "files_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "files_changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Setup Packer
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: hashicorp/setup-packer@main
+        with:
+          version: latest
+      - name: Packer Init
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          PACKER_GITHUB_API_TOKEN: "${{ secrets.PACKER_GITHUB_API_TOKEN }}"
+        run: packer init packer_templates
+      - name: Packer build
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: packer build -only=${{ matrix.provider }} -var-file=${{ inputs.pkrvars-file }} ${{ inputs.hcl-template-folder }}
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: vagrant-boxes
+          path: |
+            builds/*.box
+          retention-days: 10

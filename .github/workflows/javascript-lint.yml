@@ -1,0 +1,29 @@
+---
+on:
+  workflow_call:
+
+jobs:
+  javascript-lint:
+    runs-on: ubuntu-latest
+    container: node:alpine
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@main
+      - name: Pull Change list
+        id: changed-files
+        uses: collin-miller/git-changesets@master
+      - name: Verify Changed files
+        id: verify-changed-files
+        run: |
+          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+          if grep ".*\.js" changed.txt; then
+            echo "files_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "files_changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Run Java Script Linter
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          npm install -g eslint
+          eslint --init
+          find . -type f -iname "*.js" -exec eslint \{\} \+

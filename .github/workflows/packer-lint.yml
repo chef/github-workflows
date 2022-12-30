@@ -62,7 +62,7 @@ jobs:
       matrix: ${{ steps.enumerate_pkrvars.outputs.matrix }}
 
   packer-validate:
-    needs: enumerate_pkrvars_validation
+    needs: enumerate_pkrvars
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

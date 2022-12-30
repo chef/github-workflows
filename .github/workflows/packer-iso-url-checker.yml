@@ -6,7 +6,7 @@ on:
         required: true
 
 jobs:
-  enumerate_iso_validation:
+  enumerate_pkrvars:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,17 +31,17 @@ jobs:
         run: |
           ARRAY=($(find os_pkrvars -name "*.pkrvars.hcl" | grep -Ev '(${{ env.EXCLUDE }})'))
           echo "matrix=$(jq -cRn '[inputs]' < <( (( ${#ARRAY[@]} )) && printf '%s\n' "${ARRAY[@]}"))" >> "$GITHUB_OUTPUT"
-        id: enumerate_iso_validation
+        id: enumerate_pkrvars
     outputs:
-      matrix: ${{ steps.enumerate_iso_validation.outputs.matrix }}
+      matrix: ${{ steps.enumerate_enumerate_pkrvars.outputs.matrix }}
 
   iso-availability:
-    needs: enumerate_iso_validation
+    needs: enumerate_pkrvars
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        template: ${{ fromJson(needs.enumerate_iso_validation.outputs.matrix) }}
+        template: ${{ fromJson(needs.enumerate_pkrvars.outputs.matrix) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@main

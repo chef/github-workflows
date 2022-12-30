@@ -15,15 +15,13 @@ jobs:
   workflow-lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@main
       - name: Check workflow files
         shell: bash
         run: |
           bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-          pwd
-          ls -alh
           ./actionlint -color
-  test:
-    uses: ./.github/workflows/packer-iso-url-checker.yml
 
   check:
     if: always()

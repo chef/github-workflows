@@ -49,7 +49,7 @@ jobs:
       - name: Enumerate pkrvars validation
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         shell: pwsh
-        run: "'::set-output name=matrix::{0}' -f $(Get-ChildItem -Path ./ -Include *.pkrvars.hcl -Recurse | Foreach-Object {Join-Path -Path $_.Directory.Name -ChildPath $_.Name} | ConvertTo-Json -Compress)"
+        run: "$env::GITHUB_OUTPUT = \"matrix=$(Get-ChildItem -Path ./ -Include *.pkrvars.hcl -Recurse | Foreach-Object {Join-Path -Path $_.Directory.Name -ChildPath $_.Name} | ConvertTo-Json -Compress)\""
         id: enumerate_pkrvars_validation
     outputs:
       matrix: ${{ steps.enumerate_pkrvars_validation.outputs.matrix }}

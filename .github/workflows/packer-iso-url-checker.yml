@@ -23,9 +23,10 @@ jobs:
       - name: Enumerate iso
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         env:
-          EXCLUDE: 'amazon-2*,rhel*,sles*,solaris*'
-        shell: pwsh
-        run: "'::set-output name=matrix::{0}' -f $(Get-ChildItem -Path ./ -Include *.pkrvars.hcl -Exclude ${{ env.EXCLUDE }} -Recurse | Foreach-Object {Join-Path -Path $_.Directory.Name -ChildPath $_.Name} | ConvertTo-Json -Compress)"
+          EXCLUDE: 'amazonlinux-2.*|rhel.*|sles.*|solaris.*'
+        shell: bash
+        run: |
+          echo '${{ steps.changed-files.outputs.added_modified }}'
         id: enumerate_iso_validation
     outputs:
       matrix: ${{ steps.enumerate_iso_validation.outputs.matrix }}
@@ -55,4 +56,4 @@ jobs:
       - name: iso-availability
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         shell: pwsh
-        run: Invoke-RestMethod -Method Head -Verbose -Uri $(Get-Content os_pkrvars/$('${{ matrix.template }}'.split('-')[0])/${{ matrix.template }} | ConvertFrom-StringData).iso_url.Trim('"')
+        run: Invoke-RestMethod -Method Head -Verbose -Uri $(Get-Content os_pkrvars/'${{ matrix.template }}'.split('-')[0]/${{ matrix.template }} | ConvertFrom-StringData).iso_url.Trim('"')

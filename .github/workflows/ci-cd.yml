@@ -23,7 +23,7 @@ jobs:
           ls -alh
           ./actionlint -color
   test:
-    uses ./.github/workflows/packer-iso-url-checker.yml
+    uses: ./.github/workflows/packer-iso-url-checker.yml
 
   check:
     if: always()

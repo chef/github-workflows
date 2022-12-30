@@ -35,6 +35,6 @@ jobs:
       - name: Decide whether the needed jobs succeeded or failed
         uses: re-actors/alls-green@main
         with:
-          allowed-failures: markdown-link-checker,workflow
+          allowed-failures: markdown-link-checker,workflow-lint
           allowed-skips:
           jobs: ${{ toJSON(needs) }}

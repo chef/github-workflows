@@ -62,4 +62,4 @@ jobs:
         shell: pwsh
         run: |
           $os_name = $('${{ matrix.template }}'.split('-')[0])
-          Invoke-RestMethod -Method Head -Verbose -Uri $(Get-Content os_pkrvars/'${{ matrix.template }}'.split('-')[0]/${{ matrix.template }} | ConvertFrom-StringData).iso_url.Trim('"')
+          Invoke-RestMethod -Method Head -Verbose -Uri $(Get-Content '${{ matrix.template }}' | ConvertFrom-StringData).iso_url.Trim('"')

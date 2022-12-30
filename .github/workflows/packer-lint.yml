@@ -32,7 +32,7 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: if packer fmt -check -recursive .; then exit 0; else echo "Some packer files need to be formatted, run 'packer fmt -recursive .' to fix"; exit 1; fi
 
-  enumerate_pkrvars_validation:
+  enumerate_pkrvars:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -57,9 +57,9 @@ jobs:
         run: |
           ARRAY=($(find os_pkrvars -name "*.pkrvars.hcl" | grep -Ev '(${{ env.EXCLUDE }})'))
           echo "matrix=$(jq -cRn '[inputs]' < <( (( ${#ARRAY[@]} )) && printf '%s\n' "${ARRAY[@]}"))" >> "$GITHUB_OUTPUT"
-        id: enumerate_pkrvars_validation
+        id: enumerate_pkrvars
     outputs:
-      matrix: ${{ steps.enumerate_pkrvars_validation.outputs.matrix }}
+      matrix: ${{ steps.enumerate_pkrvars.outputs.matrix }}
 
   packer-validate:
     needs: enumerate_pkrvars_validation
@@ -67,7 +67,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pkrvars: ${{ fromJson(needs.enumerate_pkrvars_validation.outputs.matrix) }}
+        pkrvars: ${{ fromJson(needs.enumerate_pkrvars.outputs.matrix) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@main
@@ -95,4 +95,4 @@ jobs:
         run: packer init -upgrade packer_templates
       - name: Packer Validate
         if: steps.verify-changed-files.outputs.files_changed == 'true'
-        run: packer validate -var-file=os_pkrvars/"${{ matrix.pkrvars }}" packer_templates
+        run: packer validate -var-file="${{ matrix.pkrvars }}" packer_templates

@@ -22,7 +22,7 @@ jobs:
           fi
       - name: Install ShellCheck
         if: steps.verify-changed-files.outputs.files_changed == 'true'
-        run: sudo apt-get update && apt-get install shellcheck
+        run: sudo apt-get update && sudo apt-get install shellcheck
       - name: Run ShellCheck Lint
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: find . -type f -iname "*.sh" -exec shellcheck \{\} \+

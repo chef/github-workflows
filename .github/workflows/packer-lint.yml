@@ -51,11 +51,9 @@ jobs:
           fi
       - name: Enumerate pkrvars validation
         if: steps.verify-changed-files.outputs.files_changed == 'true'
-        env:
-          EXCLUDE: ''
         shell: bash
         run: |
-          ARRAY=($(find os_pkrvars -name "*.pkrvars.hcl" | grep -Ev '(${{ env.EXCLUDE }})'))
+          ARRAY=($(find os_pkrvars -name "*.pkrvars.hcl"))
           echo "matrix=$(jq -cRn '[inputs]' < <( (( ${#ARRAY[@]} )) && printf '%s\n' "${ARRAY[@]}"))" >> "$GITHUB_OUTPUT"
         id: enumerate_pkrvars
     outputs:

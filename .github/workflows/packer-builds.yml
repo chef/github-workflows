@@ -1,6 +1,9 @@
 ---
 on:
   workflow_call:
+    secrets:
+      PACKER_GITHUB_API_TOKEN:
+        required: true
     inputs:
       runs-on:
         required: true

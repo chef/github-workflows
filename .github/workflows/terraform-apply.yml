@@ -4,6 +4,7 @@ on:
     secrets:
       TOKEN_TFC:
         required: true
+      TOKEN_GITHUB:
 
 jobs:
   terraform-apply:

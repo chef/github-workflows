@@ -16,10 +16,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check workflow files
+        shell: bash
         run: |
           bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-          ./actionlint .github/workflows/*.yml -color
-        shell: bash
+          pwd
+          actionlint -color
+
 
   check:
     if: always()

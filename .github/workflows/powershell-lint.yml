@@ -23,3 +23,5 @@ jobs:
       - name: Run PowerShell Linter
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: microsoft/psscriptanalyzer-action@main
+        with:
+          recurse: true

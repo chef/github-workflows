@@ -12,6 +12,15 @@ jobs:
   yaml-lint:
     uses: ./.github/workflows/yaml-lint.yml
 
+  workflow-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check workflow files
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
+        shell: bash
+
   check:
     if: always()
     needs:

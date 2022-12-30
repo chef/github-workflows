@@ -18,7 +18,7 @@ jobs:
       - name: Check workflow files
         run: |
           bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-          ./actionlint -color
+          ./actionlint .github/workflows/*.yml -color
         shell: bash
 
   check:
@@ -27,6 +27,7 @@ jobs:
       - markdown-lint
       - markdown-link-checker
       - yaml-lint
+      - workflow-lint
     runs-on: Ubuntu-latest
     steps:
       - name: Decide whether the needed jobs succeeded or failed

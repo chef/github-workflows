@@ -15,7 +15,7 @@ jobs:
         id: verify-changed-files
         run: |
           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
-          if grep ".*\.pkrvars.hcl" changed.txt; then
+          if grep ".*\.yml" changed.txt; then
             echo "files_changed=true" >> $GITHUB_OUTPUT
           else
             echo "files_changed=false" >> $GITHUB_OUTPUT

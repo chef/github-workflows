@@ -50,8 +50,8 @@ jobs:
         if: steps.plan.outcome == 'success' && steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
           tf_plan='${{ steps.plan.outputs.stdout }}'
-          plan=$((grep 'Plan:' <<< $tf_plan) || ((grep -q "No changes" <<< $tf_plan) && echo "Plan: 0 to add, 0 to change, 0 to destroy" || exit 1))
-          echo "stdout=$(echo $plan)" >> $GITHUB_OUTPU
+          plan=$( (grep 'Plan:' <<< $tf_plan) || ( (grep -q "No changes" <<< $tf_plan) && echo "Plan: 0 to add, 0 to change, 0 to destroy" || exit 1))
+          echo "stdout=$plan" >> "$GITHUB_OUTPUT"
       - uses: actions/github-script@main
         if: github.event_name == 'pull_request' && steps.verify-changed-files.outputs.files_changed == 'true'
         env:

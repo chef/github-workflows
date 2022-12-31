@@ -49,10 +49,10 @@ jobs:
           if [ -s dbag.txt ];
           then
             echo "Need to update data_bags";
-            while read data_bag;
+            while read -r data_bag;
             do
-              bag=$(cut -d/ -f2 <<<$data_bag);
-              knife data bag from file $bag $data_bag;
+              bag=$(cut -d/ -f2 <<<"$data_bag");
+              knife data bag from file "$bag" "$data_bag";
             done < dbag.txt;
           else
             echo "No databags to update";

@@ -52,12 +52,12 @@ jobs:
           if [ -s pfile.txt ];
           then
             echo "Need to update Policy_files";
-            while read policy;
+            while read -r policy;
             do
               echo "***** Installing Cookbooks for $policy *****";
-              chef install $policy;
+              chef install "$policy";
               echo "***** Uploading Cookbooks to chef-server for $policy *****";
-              chef push ${{ inputs.POLICY_GROUP }} $policy;
+              chef push ${{ inputs.POLICY_GROUP }} "$policy";
             done < pfile.txt;
           else
             echo "No Policy_files to update";

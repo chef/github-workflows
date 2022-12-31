@@ -53,8 +53,8 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         shell: bash
         run: |
-          ARRAY=($(find os_pkrvars -name "*.pkrvars.hcl"))
-          echo "matrix=$(jq -cRn '[inputs]' < <( (( ${#ARRAY[@]} )) && printf '%s\n' "${ARRAY[@]}"))" >> "$GITHUB_OUTPUT"
+          mapfile -t < <(find os_pkrvars -name "*.pkrvars.hcl")
+          echo "matrix=$(jq -cRn '[inputs]' < <( (( ${#MAPFILE[@]} )) && printf '%s\n' "${MAPFILE[@]}"))" >> "$GITHUB_OUTPUT"
         id: enumerate_pkrvars
     outputs:
       matrix: ${{ steps.enumerate_pkrvars.outputs.matrix }}

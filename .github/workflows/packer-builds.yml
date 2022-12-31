@@ -30,8 +30,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ inputs.matrix-os }}
-        provider: ${{ inputs.matrix-provider }}
+        os: ${{ fromJson(inputs.matrix-os) }}
+        provider: ${{ fromJson(inputs.matrix-provider) }}
 
     steps:
       - name: Install qemu

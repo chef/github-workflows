@@ -33,7 +33,7 @@ jobs:
           echo "matrix=$(jq -cRn '[inputs]' < <( (( ${#ARRAY[@]} )) && printf '%s\n' "${ARRAY[@]}"))" >> "$GITHUB_OUTPUT"
         id: enumerate_pkrvars
     outputs:
-      matrix: ${{ steps.enumerate_enumerate_pkrvars.outputs.matrix }}
+      matrix: ${{ steps.enumerate_pkrvars.outputs.matrix }}
 
   iso-availability:
     needs: enumerate_pkrvars

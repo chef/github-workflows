@@ -29,8 +29,8 @@ jobs:
           EXCLUDE: 'amazonlinux-2.*|rhel.*|sles.*|solaris.*'
         shell: bash
         run: |
-          ARRAY=($(find os_pkrvars -name "*.pkrvars.hcl" | grep -Ev '(${{ env.EXCLUDE }})'))
-          echo "matrix=$(jq -cRn '[inputs]' < <( (( ${#ARRAY[@]} )) && printf '%s\n' "${ARRAY[@]}"))" >> "$GITHUB_OUTPUT"
+          mapfile -t < <(find os_pkrvars -name "*.pkrvars.hcl" | grep -Ev '(${{ env.EXCLUDE }})')
+          echo "matrix=$(jq -cRn '[inputs]' < <( (( ${#MAPFILE[@]} )) && printf '%s\n' "${MAPFILE[@]}"))" >> "$GITHUB_OUTPUT"
         id: enumerate_pkrvars
     outputs:
       matrix: ${{ steps.enumerate_pkrvars.outputs.matrix }}

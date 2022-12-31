@@ -9,7 +9,7 @@ on:
         required: true
         type: string
       POLICY_GROUP:
-        require: true
+        required: true
         type: string
     secrets:
       CHEF_PEM:
@@ -29,9 +29,9 @@ jobs:
         run: |
           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
           if grep ".*\.json" changed.txt; then
-            echo "files_changed=true" >> $GITHUB_OUTPUT
+            echo "files_changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "files_changed=false" >> $GITHUB_OUTPUT
+            echo "files_changed=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Install Chef
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -46,18 +46,18 @@ jobs:
           ssl_verify_mode          :verify_none
           chef_server_url          '${{ inputs.CHEF_SERVER_URL }}'
           EOF
-          echo "${{ secrets.CHEF_ADMIN }}" >> /root/.chef/${{ inputs.CHEF_USER }}.pem
+          echo "${{ secrets.CHEF_PEM }}" >> /root/.chef/${{ inputs.CHEF_USER }}.pem
 
           git diff --diff-filter=d --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | { grep "policyfiles/.*.lock.json" || true; } > pfile.txt
           if [ -s pfile.txt ];
           then
             echo "Need to update Policy_files";
-            while read policy;
+            while read -r policy;
             do
               echo "***** Installing Cookbooks for $policy *****";
-              chef install $policy;
+              chef install "$policy";
               echo "***** Uploading Cookbooks to chef-server for $policy *****";
-              chef push ${{ inputs.POLICY_GROUP }} $policy;
+              chef push ${{ inputs.POLICY_GROUP }} "$policy";
             done < pfile.txt;
           else
             echo "No Policy_files to update";

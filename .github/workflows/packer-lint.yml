@@ -1,6 +1,9 @@
 ---
 on:
   workflow_call:
+    secrets:
+      PACKER_GITHUB_API_TOKEN:
+        required: true
 
 jobs:
   packer-fmt:
@@ -16,9 +19,9 @@ jobs:
         run: |
           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
           if grep ".*\.hcl" changed.txt; then
-            echo "files_changed=true" >> $GITHUB_OUTPUT
+            echo "files_changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "files_changed=false" >> $GITHUB_OUTPUT
+            echo "files_changed=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Setup Packer
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -29,7 +32,7 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: if packer fmt -check -recursive .; then exit 0; else echo "Some packer files need to be formatted, run 'packer fmt -recursive .' to fix"; exit 1; fi
 
-  enumerate_pkrvars_validation:
+  enumerate_pkrvars:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,25 +45,27 @@ jobs:
         run: |
           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
           if grep ".*\.hcl" changed.txt; then
-            echo "files_changed=true" >> $GITHUB_OUTPUT
+            echo "files_changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "files_changed=false" >> $GITHUB_OUTPUT
+            echo "files_changed=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Enumerate pkrvars validation
         if: steps.verify-changed-files.outputs.files_changed == 'true'
-        shell: pwsh
-        run: "'::set-output name=matrix::{0}' -f $(Get-ChildItem -Path ./ -Include *.pkrvars.hcl -Recurse | Foreach-Object {Join-Path -Path $_.Directory.Name -ChildPath $_.Name} | ConvertTo-Json -Compress)"
-        id: enumerate_pkrvars_validation
+        shell: bash
+        run: |
+          mapfile -t < <(find os_pkrvars -name "*.pkrvars.hcl")
+          echo "matrix=$(jq -cRn '[inputs]' < <( (( ${#MAPFILE[@]} )) && printf '%s\n' "${MAPFILE[@]}"))" >> "$GITHUB_OUTPUT"
+        id: enumerate_pkrvars
     outputs:
-      matrix: ${{ steps.enumerate_pkrvars_validation.outputs.matrix }}
+      matrix: ${{ steps.enumerate_pkrvars.outputs.matrix }}
 
   packer-validate:
-    needs: enumerate_pkrvars_validation
+    needs: enumerate_pkrvars
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        pkrvars: ${{ fromJson(needs.enumerate_pkrvars_validation.outputs.matrix) }}
+        pkrvars: ${{ fromJson(needs.enumerate_pkrvars.outputs.matrix) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@main
@@ -72,9 +77,9 @@ jobs:
         run: |
           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
           if grep ".*\.hcl" changed.txt; then
-            echo "files_changed=true" >> $GITHUB_OUTPUT
+            echo "files_changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "files_changed=false" >> $GITHUB_OUTPUT
+            echo "files_changed=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Setup Packer
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -88,4 +93,4 @@ jobs:
         run: packer init -upgrade packer_templates
       - name: Packer Validate
         if: steps.verify-changed-files.outputs.files_changed == 'true'
-        run: packer validate -var-file=os_pkrvars/"${{ matrix.pkrvars }}" packer_templates
+        run: packer validate -var-file="${{ matrix.pkrvars }}" packer_templates

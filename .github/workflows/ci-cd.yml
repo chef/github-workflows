@@ -12,12 +12,24 @@ jobs:
   yaml-lint:
     uses: ./.github/workflows/yaml-lint.yml
 
+  workflow-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@main
+      - name: Check workflow files
+        shell: bash
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
+
   check:
     if: always()
     needs:
       - markdown-lint
       - markdown-link-checker
       - yaml-lint
+      - workflow-lint
     runs-on: Ubuntu-latest
     steps:
       - name: Decide whether the needed jobs succeeded or failed

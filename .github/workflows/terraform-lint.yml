@@ -4,6 +4,7 @@ on:
     secrets:
       TOKEN_TFC:
         required: true
+      TOKEN_GITHUB:
 
 permissions:
   contents: read
@@ -22,9 +23,9 @@ jobs:
         run: |
           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
           if grep ".*\.tf\|.*\.tfvars\|.*.tfvars.json" changed.txt; then
-            echo "files_changed=true" >> $GITHUB_OUTPUT
+            echo "files_changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "files_changed=false" >> $GITHUB_OUTPUT
+            echo "files_changed=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Check linting of Terraform modules
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -48,9 +49,9 @@ jobs:
         run: |
           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
           if grep ".*\.tf\|.*\.tfvars\|.*.tfvars.json" changed.txt; then
-            echo "files_changed=true" >> $GITHUB_OUTPUT
+            echo "files_changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "files_changed=false" >> $GITHUB_OUTPUT
+            echo "files_changed=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Terraform Format
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -72,9 +73,9 @@ jobs:
         run: |
           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
           if grep ".*\.tf\|.*\.tfvars\|.*.tfvars.json" changed.txt; then
-            echo "files_changed=true" >> $GITHUB_OUTPUT
+            echo "files_changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "files_changed=false" >> $GITHUB_OUTPUT
+            echo "files_changed=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Setup Terraform
         if: steps.verify-changed-files.outputs.files_changed == 'true'

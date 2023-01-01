@@ -25,3 +25,4 @@ jobs:
         uses: microsoft/psscriptanalyzer-action@main
         with:
           recurse: true
+          includeDefaultRules: true

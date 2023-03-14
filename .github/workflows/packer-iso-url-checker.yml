@@ -8,20 +8,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@main
-      - name: Pull Change list
-        id: changed-files
-        uses: collin-miller/git-changesets@master
-      - name: Verify Changed files
-        id: verify-changed-files
-        run: |
-          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
-          if grep ".*\.pkrvars.hcl" changed.txt; then
-            echo "files_changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "files_changed=false" >> "$GITHUB_OUTPUT"
-          fi
       - name: Enumerate iso
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
         env:
           EXCLUDE: 'amazonlinux-2.*|rhel.*|sles.*|solaris.*'
         shell: bash
@@ -42,19 +29,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@main
-      - name: Pull Change list
-        id: changed-files
-        uses: collin-miller/git-changesets@master
-      - name: Verify Changed files
-        id: verify-changed-files
-        run: |
-          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
-          if grep ".*\.pkrvars.hcl" changed.txt; then
-            echo "files_changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "files_changed=false" >> "$GITHUB_OUTPUT"
-          fi
       - name: iso-availability
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
         shell: pwsh
         run: Invoke-RestMethod -Method Head -Verbose -Uri $(Get-Content '${{ matrix.template }}' | ConvertFrom-StringData).iso_url.Trim('"')

@@ -1,0 +1,143 @@
+name: "Chef: Lints"
+branding:
+  icon: "shield"
+  color: "gray-dark"
+description: "Caching modules from PSRepositories"
+inputs:
+  chef-data_bags-deploy:
+    description: ""
+    required: false
+    default: "false"
+  ci-cd:
+    description: ""
+    required: false
+    default: "false"
+  cookstyle-lint:
+    description: ""
+    required: false
+    default: "false"
+  json-lint:
+    description: ""
+    required: false
+    default: "false"
+  markdown-lint:
+    description: ""
+    required: false
+    default: "false"
+  packer-lint:
+    description: ""
+    required: false
+    default: "false"
+  python-lint:
+    description: ""
+    required: false
+    default: "false"
+  terraform-apply:
+    description: ""
+    required: false
+    default: "false"
+  terraform-plan:
+    description: ""
+    required: false
+    default: "false"
+  yaml-lint:
+    description: ""
+    required: false
+    default: "false"
+  chef-policyfiles-deploy:
+    description: ""
+    required: false
+    default: "false"
+  cookbook-supermarket-deploy:
+    description: ""
+    required: false
+    default: "false"
+  javascript-lint:
+    description: ""
+    required: false
+    default: "false"
+  markdown-link-checker:
+    description: ""
+    required: false
+    default: "false"
+  packer-iso-url-checker:
+    description: ""
+    required: false
+    default: "false"
+  powershell-lint:
+    description: ""
+    required: false
+    default: "false"
+  shellcheck-lint:
+    description: ""
+    required: false
+    default: "false"
+  terraform-lint:
+    description: ""
+    required: false
+    default: "false"
+  xml-lint:
+    description: ""
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - id: chef-data_bags-deploy
+      if: inputs.chef-data_bags-deploy
+      uses: ./.github/workflows/chef-data_bags-deploy.yml
+    - id: ci-cd
+      if: inputs.ci-cd
+      uses: ./.github/workflows/ci-cd.yml
+    - id: cookstyle-lint
+      if: inputs.cookstyle-lint
+      uses: ./.github/workflows/cookstyle-lint.yml
+    - id: json-lint
+      if: inputs.json-lint
+      uses: ./.github/workflows/json-lint.yml
+    - id: markdown-lint
+      if: inputs.markdown-lint
+      uses: ./.github/workflows/markdown-lint.yml
+    - id: packer-lint
+      if: inputs.packer-lint
+      uses: ./.github/workflows/packer-lint.yml
+    - id: python-lint
+      if: inputs.python-lint
+      uses: ./.github/workflows/python-lint.yml
+    - id: terraform-apply
+      if: inputs.terraform-apply
+      uses: ./.github/workflows/terraform-apply.yml
+    - id: terraform-plan
+      if: inputs.terraform-plan
+      uses: ./.github/workflows/terraform-plan.yml
+    - id: yaml-lint
+      if: inputs.yaml-lint
+      uses: ./.github/workflows/yaml-lint.yml
+    - id: chef-policyfiles-deploy
+      if: inputs.chef-policyfiles-deploy
+      uses: ./.github/workflows/chef-policyfiles-deploy.yml
+    - id: cookbook-supermarket-deploy
+      if: inputs.cookbook-supermarket-deploy
+      uses: ./.github/workflows/cookbook-supermarket-deploy.yml
+    - id: javascript-lint
+      if: inputs.javascript-lint
+      uses: ./.github/workflows/javascript-lint.yml
+    - id: markdown-link-checker
+      if: inputs.markdown-link-checker
+      uses: ./.github/workflows/markdown-link-checker.yml
+    - id: packer-iso-url-checker
+      if: inputs.packer-iso-url-checker
+      uses: ./.github/workflows/packer-iso-url-checker.yml
+    - id: powershell-lint
+      if: inputs.powershell-lint
+      uses: ./.github/workflows/powershell-lint.yml
+    - id: shellcheck-lint
+      if: inputs.shellcheck-lint
+      uses: ./.github/workflows/shellcheck-lint.yml
+    - id: terraform-lint
+      if: inputs.terraform-lint
+      uses: ./.github/workflows/terraform-lint.yml
+    - id: xml-lint
+      if: inputs.xml-lint
+      uses: ./.github/workflows/xml-lint.yml

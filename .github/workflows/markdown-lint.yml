@@ -24,5 +24,16 @@ jobs:
       - name: Run Markdown Linter
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
-          gem install mdl
-          find . -type f -iname "*.md" -exec mdl \{\} \+
+          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+          declare -a mds
+          while read -r f; do
+            if [[ "$f" =~ \.md ]]; then
+              mds+=("$f")
+            fi
+          done <changed.txt
+          if [ ${#mds[@]} -ne 0 ]; then
+            gem install mdl
+            for mdf in "${mds[@]}"; do
+                mdl "$mdf"
+            done
+          fi

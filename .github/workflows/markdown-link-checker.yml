@@ -1,3 +1,33 @@
+# ---
+# on:
+#   workflow_call:
+
+# jobs:
+#   markdown-link-checker:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Check out code
+#         uses: actions/checkout@main
+#       - name: Pull Change list
+#         id: changed-files
+#         uses: collin-miller/git-changesets@master
+#       - name: Verify Changed files
+#         id: verify-changed-files
+#         run: |
+#           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
+#           if grep ".*\.md" changed.txt; then
+#             echo "files_changed=true" >> "$GITHUB_OUTPUT"
+#           else
+#             echo "files_changed=false" >> "$GITHUB_OUTPUT"
+#           fi
+#       - name: markdown-link-check
+#         if: steps.verify-changed-files.outputs.files_changed == 'true'
+#         uses: gaurav-nelson/github-action-markdown-link-check@master
+#         with:
+#           base-branch: 'main'
+#           check-modified-files-only: 'yes'
+# #          use-verbose-mode: "yes"
+
 ---
 on:
   workflow_call:
@@ -7,23 +37,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@main
-      - name: Pull Change list
-        id: changed-files
-        uses: collin-miller/git-changesets@master
-      - name: Verify Changed files
-        id: verify-changed-files
-        run: |
-          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
-          if grep ".*\.md" changed.txt; then
-            echo "files_changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "files_changed=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: markdown-link-check
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        uses: gaurav-nelson/github-action-markdown-link-check@master
+        uses: actions/checkout@v3 # Do we actually need main?
         with:
-          base-branch: 'main'
-          check-modified-files-only: 'yes'
-#          use-verbose-mode: "yes"
+          fetch-depth: 2 # Ensures we have the history to determine changed files
+      - name: Install markdown-link-check
+        run: npm install -g markdown-link-check
+      - name: Fetch the base branch
+        run: git fetch --depth=1 origin ${{ github.base_ref }}
+      - name: Get changed markdown files
+        id: get-changed-files
+        run: |
+          echo "Finding changed markdown files..."
+          files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md')
+          echo "::set-output name=files::$files"
+      - name: Check links in changed Markdown files
+        run: |
+          files="${{ steps.get-changed-files.outputs.files }}"
+          for file in $files; do
+            if [ -f "$file" ]; then
+              echo "Checking $file"
+              markdown-link-check "$file"
+            fi
+          done

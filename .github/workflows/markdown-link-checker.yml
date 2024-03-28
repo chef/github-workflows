@@ -49,7 +49,7 @@ jobs:
         run: |
           echo "Finding changed markdown files..."
           files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md')
-          echo "::set-output name=files::$files"
+          echo "files=$files" >> "$GITHUB_OUTPUT"
       - name: Check links in changed Markdown files
         run: |
           files="${{ steps.get-changed-files.outputs.files }}"

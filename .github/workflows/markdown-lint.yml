@@ -45,7 +45,7 @@ on:
 jobs:
   markdown-lint:
     runs-on: ubuntu-latest
-    container: ruby:alpine
+    # container: ruby:alpine
     steps:
       - name: Checkout Code
         # uses: actions/checkout@main
@@ -59,12 +59,12 @@ jobs:
         run: |
           files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md')
           echo "files=$files" >> "$GITHUB_OUTPUT"
-      - name: Run Markdown Linter
+      - name: Install/run Markdown Linter
         run: |
           mds="${{ steps.get-changed-files.outputs.files }}"
           if [ ${#mds[@]} -ne 0 ]; then
-            gem install mdl
+            npm install -g markdownlint-cli
             for mdf in "${mds[@]}"; do
-                mdl "$mdf"
+                markdownlint "$mdf"
             done
           fi

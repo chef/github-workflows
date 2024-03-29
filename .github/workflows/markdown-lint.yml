@@ -45,7 +45,7 @@ on:
 jobs:
   markdown-lint:
     runs-on: ubuntu-latest
-    # container: ruby:alpine
+    container: ruby:alpine
     steps:
       - name: Checkout Code
         # uses: actions/checkout@main

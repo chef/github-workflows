@@ -24,7 +24,7 @@ jobs:
             npm install -g markdown-link-check
             for mdf in "${mds[@]}"; do
                 echo "Linkchecking $mdf ..."
-                markdownlint "$mdf"
+                markdown-link-check "$mdf"
             done
           fi
       # - name: Check links in changed markdown files

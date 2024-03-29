@@ -42,8 +42,8 @@ jobs:
         #   fetch-depth: 2 # Ensures we have the history to determine changed files
       # - name: Install markdown-link-check
       #   run: npm install -g markdown-link-check
-      # - name: Fetch the base branch
-      #   run: git fetch --depth=1 origin ${{ github.base_ref }}
+      - name: Fetch the base branch
+        run: git fetch --depth=1 origin ${{ github.base_ref }}
       - name: Get changed markdown files
         id: get-changed-files
         run: |

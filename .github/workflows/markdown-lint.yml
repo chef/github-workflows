@@ -45,7 +45,7 @@ on:
 jobs:
   markdown-lint:
     runs-on: ubuntu-latest
-    container: ruby:alpine
+    # container: ruby:alpine
     steps:
       - name: Checkout Code
         # uses: actions/checkout@main
@@ -57,7 +57,6 @@ jobs:
       - name: Get changed markdown files
         id: get-changed-files
         run: |
-          echo "Finding changed markdown files..."
           files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md')
           echo "files=$files" >> "$GITHUB_OUTPUT"
       - name: Run Markdown Linter

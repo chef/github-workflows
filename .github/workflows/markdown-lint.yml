@@ -1,43 +1,3 @@
-# ---
-# on:
-#   workflow_call:
-
-# jobs:
-#   markdown-lint:
-#     runs-on: ubuntu-latest
-#     container: ruby:alpine
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@main
-#       - name: Pull Change list
-#         id: changed-files
-#         uses: collin-miller/git-changesets@master
-#       - name: Verify Changed files
-#         id: verify-changed-files
-#         run: |
-#           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
-#           if grep ".*\.md" changed.txt; then
-#             echo "files_changed=true" >> "$GITHUB_OUTPUT"
-#           else
-#             echo "files_changed=false" >> "$GITHUB_OUTPUT"
-#           fi
-#       - name: Run Markdown Linter
-#         if: steps.verify-changed-files.outputs.files_changed == 'true'
-#         run: |
-#           echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
-#           declare -a mds
-#           while read -r f; do
-#             if [[ "$f" =~ \.md ]]; then
-#               mds+=("$f")
-#             fi
-#           done <changed.txt
-#           if [ ${#mds[@]} -ne 0 ]; then
-#             gem install mdl
-#             for mdf in "${mds[@]}"; do
-#                 mdl "$mdf"
-#             done
-#           fi
-
 ---
 on:
   workflow_call:
@@ -63,6 +23,7 @@ jobs:
           if [ ${#mds[@]} -ne 0 ]; then
             npm install -g markdownlint-cli
             for mdf in "${mds[@]}"; do
+                echo "Linting $mdf ..."
                 markdownlint "$mdf"
             done
           fi

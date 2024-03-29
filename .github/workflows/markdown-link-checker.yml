@@ -15,11 +15,12 @@ jobs:
       - name: Get changed markdown files
         id: get-changed-files
         run: |
-          files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md')
+          files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md' | tr '\n' ' ')
           echo "files=$files" >> "$GITHUB_OUTPUT"
       - name: Install/run markdown link checker against changed markdown files
         run: |
-          mds="${{ steps.get-changed-files.outputs.files }}"
+          files="${{ steps.get-changed-files.outputs.files }}"
+          IFS=' ' read -r -a mds <<< "$files"
           if [ ${#mds[@]} -ne 0 ]; then
             npm install -g markdown-link-check
             for mdf in "${mds[@]}"; do

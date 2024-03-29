@@ -38,23 +38,29 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3 # Do we actually need main?
-        with:
-          fetch-depth: 2 # Ensures we have the history to determine changed files
-      - name: Install markdown-link-check
-        run: npm install -g markdown-link-check
-      - name: Fetch the base branch
-        run: git fetch --depth=1 origin ${{ github.base_ref }}
+        # with:
+        #   fetch-depth: 2 # Ensures we have the history to determine changed files
+      # - name: Install markdown-link-check
+      #   run: npm install -g markdown-link-check
+      # - name: Fetch the base branch
+      #   run: git fetch --depth=1 origin ${{ github.base_ref }}
       - name: Get changed markdown files
         id: get-changed-files
         run: |
           files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md')
           echo "files=$files" >> "$GITHUB_OUTPUT"
-      - name: Check links in changed Markdown files
-        run: |
-          files="${{ steps.get-changed-files.outputs.files }}"
-          for file in $files; do
-            if [ -f "$file" ]; then
-              echo "Checking $file"
-              markdown-link-check "$file"
-            fi
-          done
+      - name: markdown-link-check
+        uses: gaurav-nelson/github-action-markdown-link-check@master
+        with:
+          base-branch: ${{ github.base_ref }}
+          check-modified-files-only: 'yes'
+          use-verbose-mode: 'yes'
+      # - name: Check links in changed Markdown files
+      #   run: |
+      #     files="${{ steps.get-changed-files.outputs.files }}"
+      #     for file in $files; do
+      #       if [ -f "$file" ]; then
+      #         echo "Checking $file"
+      #         markdown-link-check "$file"
+      #       fi
+      #     done

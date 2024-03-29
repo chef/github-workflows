@@ -45,11 +45,9 @@ on:
 jobs:
   markdown-lint:
     runs-on: ubuntu-latest
-    # container: ruby:alpine
     steps:
-      - name: Checkout Code
-        # uses: actions/checkout@main
-        uses: actions/checkout@v3 # Do we actually need main?
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
           fetch-depth: 2 # Ensures we have the history to determine changed files
       - name: Fetch the base branch
@@ -59,7 +57,7 @@ jobs:
         run: |
           files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md')
           echo "files=$files" >> "$GITHUB_OUTPUT"
-      - name: Install/run Markdown Linter
+      - name: Install/run markdown linter against changed markdown files
         run: |
           mds="${{ steps.get-changed-files.outputs.files }}"
           if [ ${#mds[@]} -ne 0 ]; then

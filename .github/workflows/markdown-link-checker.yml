@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v3 # Do we actually need main?
+        uses: actions/checkout@v3
         with:
           fetch-depth: 2 # Ensures we have the history to determine changed files
       - name: Fetch the base branch
@@ -49,7 +49,7 @@ jobs:
       #   run: |
       #     files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md')
       #     echo "files=$files" >> "$GITHUB_OUTPUT"
-      # - name: Check links in changed Markdown files
+      # - name: Check links in changed markdown files
       #   run: |
       #     files="${{ steps.get-changed-files.outputs.files }}"
       #     for file in $files; do
@@ -58,7 +58,7 @@ jobs:
       #         markdown-link-check "$file"
       #       fi
       #     done
-      - name: markdown-link-check
+      - name: Check links in changed markdown files
         uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           base-branch: ${{ github.base_ref }}

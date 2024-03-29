@@ -38,8 +38,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3 # Do we actually need main?
-        # with:
-        #   fetch-depth: 2 # Ensures we have the history to determine changed files
+        with:
+          fetch-depth: 2 # Ensures we have the history to determine changed files
       # - name: Install markdown-link-check
       #   run: npm install -g markdown-link-check
       - name: Fetch the base branch
@@ -50,7 +50,7 @@ jobs:
           files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md')
           echo "files=$files" >> "$GITHUB_OUTPUT"
       - name: markdown-link-check
-        uses: gaurav-nelson/github-action-markdown-link-check@master
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           base-branch: ${{ github.base_ref }}
           check-modified-files-only: 'yes'

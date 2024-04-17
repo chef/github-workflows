@@ -1,6 +1,10 @@
 ---
 on:
   workflow_call:
+    inputs:
+      EXCLUDE_REGEX:
+        required: true
+        type: string
 
 jobs:
   enumerate_pkrvars:
@@ -10,7 +14,7 @@ jobs:
         uses: actions/checkout@main
       - name: Enumerate iso
         env:
-          EXCLUDE: 'amazonlinux-2.*|rhel.*|sles.*|solaris.*'
+          EXCLUDE: ${{ inputs.SUPERMARKET_URL }}
         shell: bash
         run: |
           mapfile -t < <(find os_pkrvars -name "*.pkrvars.hcl" | grep -Ev '(${{ env.EXCLUDE }})')

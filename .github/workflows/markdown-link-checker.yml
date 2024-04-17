@@ -28,9 +28,3 @@ jobs:
                 markdown-link-check "$mdf"
             done
           fi
-      # - name: Check links in changed markdown files
-      #   uses: gaurav-nelson/github-action-markdown-link-check@v1
-      #   with:
-      #     base-branch: ${{ github.base_ref }}
-      #     check-modified-files-only: 'yes'
-      #     # use-verbose-mode: 'yes'

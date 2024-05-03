@@ -5,24 +5,26 @@ on:
 jobs:
   markdown-lint:
     runs-on: ubuntu-latest
-    container: ruby:alpine
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@main
-      - name: Pull Change list
-        id: changed-files
-        uses: collin-miller/git-changesets@master
-      - name: Verify Changed files
-        id: verify-changed-files
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2 # Ensures we have the history to determine changed files
+      - name: Fetch the base branch
+        run: git fetch --depth=1 origin ${{ github.base_ref }}
+      - name: Get changed markdown files
+        id: get-changed-files
         run: |
-          echo '${{ steps.changed-files.outputs.added_modified }}' > changed.txt
-          if grep ".*\.md" changed.txt; then
-            echo "files_changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "files_changed=false" >> "$GITHUB_OUTPUT"
+          files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md' | tr '\n' ' ')
+          echo "files=$files" >> "$GITHUB_OUTPUT"
+      - name: Install/run markdown linter against changed markdown files
+        run: |
+          files="${{ steps.get-changed-files.outputs.files }}"
+          IFS=' ' read -r -a mds <<< "$files"
+          if [ ${#mds[@]} -ne 0 ]; then
+            npm install -g markdownlint-cli
+            for mdf in "${mds[@]}"; do
+                echo "Linting $mdf ..."
+                markdownlint "$mdf"
+            done
           fi
-      - name: Run Markdown Linter
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        run: |
-          gem install mdl
-          find . -type f -iname "*.md" -exec mdl \{\} \+

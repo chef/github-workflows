@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
         with:
           fetch-depth: 2 # Ensures we have the history to determine changed files
       - name: Fetch the base branch
@@ -17,14 +17,8 @@ jobs:
         run: |
           files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.md' | tr '\n' ' ')
           echo "files=$files" >> "$GITHUB_OUTPUT"
-      - name: Install/run markdown linter against changed markdown files
-        run: |
-          files="${{ steps.get-changed-files.outputs.files }}"
-          IFS=' ' read -r -a mds <<< "$files"
-          if [ ${#mds[@]} -ne 0 ]; then
-            npm install -g markdownlint-cli
-            for mdf in "${mds[@]}"; do
-                echo "Linting $mdf ..."
-                markdownlint "$mdf"
-            done
-          fi
+      - name: Markdown lint
+        if: steps.get-changed-files.outputs.files != ''
+        uses: DavidAnson/markdownlint-cli2-action@v22
+        with:
+          globs: ${{ steps.get-changed-files.outputs.files }}

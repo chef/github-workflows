@@ -19,6 +19,6 @@ jobs:
           echo "files=$files" >> "$GITHUB_OUTPUT"
       - name: Markdown lint
         if: steps.get-changed-files.outputs.files != ''
-        uses: DavidAnson/markdownlint-cli2-action@v22
+        uses: DavidAnson/markdownlint-cli2-action@main
         with:
           globs: ${{ steps.get-changed-files.outputs.files }}

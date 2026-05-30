@@ -10,7 +10,7 @@ jobs:
         uses: actions/checkout@main
       - name: Pull Change list
         id: changed-files
-        uses: collin-miller/git-changesets@master
+        uses: collin-miller/git-changesets@main
       - name: Verify Changed files
         id: verify-changed-files
         run: |
